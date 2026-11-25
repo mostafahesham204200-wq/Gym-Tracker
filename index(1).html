@@ -1,0 +1,455 @@
+<!doctype html>
+<html dir="rtl" lang="ar">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; worker-src 'self'; style-src 'unsafe-inline'; img-src data:; connect-src 'self'; base-uri 'none'; form-action 'none'; object-src 'none'">
+<meta name="theme-color" content="#0F1115">
+<title>سجل الجيم</title>
+<style>
+:root{--bg:#0f1115;--card:#1a1d26;--card2:#222634;--txt:#e7e9ee;--mut:#9aa1b2;--acc:#22c55e;--acc2:#0ea5e9;--danger:#f87171;--line:#2a2f3f;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--bg);color:var(--txt);font-family:system-ui,'Segoe UI',Roboto,sans-serif;font-size:15px}
+header{position:sticky;top:0;background:var(--bg);padding:14px 16px 10px;z-index:5;border-bottom:1px solid var(--line)}
+header h1{font-size:19px;margin:0}
+header .sub{color:var(--mut);font-size:13px;margin-top:2px}
+main{padding:14px 14px 96px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.btn{display:block;width:100%;background:var(--acc);color:#052e16;border:0;border-radius:12px;padding:13px;font-size:16px;font-weight:700;margin:8px 0;cursor:pointer}
+.btn.sec{background:var(--card2);color:var(--txt);border:1px solid var(--line)}
+.btn.danger{background:#3b1d22;color:var(--danger)}
+.btn.sm{width:auto;display:inline-block;padding:8px 14px;font-size:14px;margin:4px 4px 4px 0}
+.chip{display:inline-block;background:var(--card2);border:1px solid var(--line);border-radius:999px;padding:5px 12px;margin:3px;font-size:13px}
+.row{display:flex;align-items:center;gap:8px}
+.grow{flex:1}
+.mut{color:var(--mut);font-size:13px;line-height:1.7}
+h3{margin:4px 0 10px;font-size:16px}
+input[type=text],input[type=number],input[type=date],select,textarea{background:#0d0f14;border:1px solid var(--line);color:var(--txt);border-radius:10px;padding:10px;font-size:15px;width:100%}
+input[type=number].w{width:78px}
+input[type=number].r{width:66px}
+table.sets{width:100%;border-collapse:collapse;margin-top:6px}
+table.sets td{padding:4px 2px;text-align:center}
+.tag{font-size:11px;background:#12314a;color:#7dd3fc;border-radius:6px;padding:2px 8px}
+.exrow{display:flex;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}
+.exrow:last-child{border-bottom:0}
+nav#tabbar{position:fixed;bottom:0;left:0;right:0;display:flex;background:#12151c;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav#tabbar button{flex:1;background:none;border:0;color:var(--mut);padding:9px 0 10px;font-size:12px;cursor:pointer;font-family:inherit}
+nav#tabbar button .ic{display:block;margin-bottom:2px}
+nav#tabbar button .ic svg{width:22px;height:22px;display:block;margin:0 auto}
+nav#tabbar button.on{color:var(--acc)}
+.view{display:none}.view.on{display:block}
+.modal-wrap{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:flex-end;z-index:50}
+.modal{background:var(--card);border-radius:18px 18px 0 0;width:100%;max-height:82vh;overflow-y:auto;padding:18px 16px 26px}
+#toast{position:fixed;bottom:84px;left:16px;right:16px;background:#052e16;color:#86efac;border:1px solid #14532d;padding:12px 14px;border-radius:12px;display:none;z-index:99;font-size:14px;line-height:1.6}
+.stats{display:flex;gap:10px}
+.stat{flex:1;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center;font-size:12px;color:var(--mut)}
+.stat b{display:block;font-size:19px;color:var(--acc);margin-bottom:2px}
+.hdr{display:flex;align-items:center;justify-content:space-between}
+.delbtn{background:none;border:0;color:var(--danger);font-size:15px;padding:4px 8px;cursor:pointer}
+.xbtn{background:var(--card2);border:1px solid var(--line);color:var(--danger);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:13px}
+main{max-width:760px;margin:auto}.modal{max-width:760px;margin:auto} .notice{background:#332812;border:1px solid #866128;color:#ffe1a1;padding:12px 16px;font-size:13px;line-height:1.7} .stat{line-height:1.7;min-width:0} .entry{background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:10px;margin:10px 0}
+</style>
+</head>
+<body>
+<header><h1 id="vt">سجل الجيم</h1><div class="sub" id="vsub"></div></header>
+<div id="storageWarning" class="notice" hidden role="alert"></div>
+<div id="offlineStatus" class="notice" role="status" aria-live="polite">جاري فحص تجهيز الأوفلاين...</div>
+<main>
+<section id="v-today" class="view"></section>
+<section id="v-sched" class="view"></section>
+<section id="v-ex" class="view"></section>
+<section id="v-hist" class="view"></section>
+<section id="v-wo" class="view"></section>
+</main>
+<nav id="tabbar">
+<button data-t="v-today" class="on" onclick="go('v-today')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5V21H3z"/><path d="M9 21v-6h6v6"/></svg></span>اليوم</button>
+<button data-t="v-sched" onclick="go('v-sched')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg></span>جدولي</button>
+<button data-t="v-ex" onclick="go('v-ex')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 8v8M17 8v8M3 10v4M21 10v4M7 12h10"/></svg></span>تماريني</button>
+<button data-t="v-hist" onclick="go('v-hist')"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 2.5h6v3H9z"/><path d="M9 11h6M9 15h4"/></svg></span>سجلي</button>
+</nav>
+<div id="mroot"></div>
+<div id="toast"></div>
+<script>
+var DAYS=['السبت','الأحد','الاتنين','التلات','الأربع','الخميس','الجمعة'];
+var MONTHS=['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'];
+var LS='gymlog.v1', LSD='gymlog.draft';
+var loadFailed=false;
+var db=load();
+var cur=null;
+var view='v-today';
+var committed=JSON.stringify(db);
+var storageReady=false;
+
+function emptyDb(){return {v:1,exercises:[],schedule:{},sessions:[]};}
+function validDate(s){if(typeof s!=='string'||!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;var d=new Date(s+'T12:00:00');return !isNaN(d)&&isoOf(d)===s;}
+function cleanData(d){
+  if(!d||d.v!==1||!Array.isArray(d.exercises)||d.exercises.length>2000||!Array.isArray(d.sessions)||d.sessions.length>20000||!d.schedule||typeof d.schedule!=='object'||Array.isArray(d.schedule))throw Error('schema');
+  var ids=new Set(),sessions=new Set(),dates=new Set();
+  function text(x,n){if(typeof x!=='string'||x.length>n)throw Error('text');return x;}
+  function id(x){if(typeof x!=='string'||!/^[A-Za-z0-9_-]{1,100}$/.test(x))throw Error('id');return x;}
+  function num(x,integer){if(x==='')return '';if((typeof x!=='string'&&typeof x!=='number')||!Number.isFinite(Number(x))||Number(x)<0||Number(x)>100000||(integer&&!Number.isInteger(Number(x))))throw Error('number');return String(x);}
+  var out=emptyDb();
+  out.exercises=d.exercises.map(function(e){var k=id(e.id);if(ids.has(k))throw Error('duplicate');ids.add(k);return {id:k,name:text(e.name,200),group:text(e.group||'',100)};});
+  for(var k in d.schedule){if(!/^[0-6]$/.test(k)||!Array.isArray(d.schedule[k])||d.schedule[k].length>2000)throw Error('schedule');out.schedule[k]=Array.from(new Set(d.schedule[k].map(function(x){id(x);if(!ids.has(x))throw Error('reference');return x;})));}
+  out.sessions=d.sessions.map(function(s){var k=id(s.id);if(sessions.has(k)||!validDate(s.date)||dates.has(s.date)||!Array.isArray(s.entries)||s.entries.length>2000)throw Error('session');sessions.add(k);dates.add(s.date);var status=s.status||'attended';if(['attended','missed','rest'].indexOf(status)<0)throw Error('status');return {id:k,date:s.date,dayIdx:dayIdxOf(new Date(s.date+'T12:00:00')),status:status,note:text(s.note||'',10000),entries:s.entries.map(function(e){if(!Array.isArray(e.sets)||e.sets.length>1000)throw Error('sets');return {exerciseId:id(e.exerciseId),name:text(e.name,200),sets:e.sets.map(function(t){return {w:num(t.w,false),r:num(t.r,true)};})};})};});
+  return out;
+}
+function load(){try{var j=localStorage.getItem(LS);return j?cleanData(JSON.parse(j)):emptyDb();}catch(e){loadFailed=true;return emptyDb();}}
+function storageError(){var el=document.getElementById('storageWarning');el.hidden=false;el.textContent='الحفظ في المتصفح مش متاح أو البيانات المحفوظة مش قابلة للقراءة. ما تعتمدش على أي تعديل قبل حل المشكلة. صدّر نسخة من بياناتك لو ظاهرة، وما تمسحش بيانات المتصفح.';}
+function save(){if(loadFailed){storageError();toast('التخزين غير قابل للقراءة. ما اتحفظش تغيير عشان نحمي السجل القديم');return false;}try{var json=JSON.stringify(db);localStorage.setItem(LS,json);committed=json;storageReady=true;return true;}catch(e){db=JSON.parse(committed);storageError();toast('التعديل ما اتحفظش. مساحة أو صلاحية التخزين مش متاحة');return false;}}
+function saveDraft(){if(!cur)return;try{localStorage.setItem(LSD,JSON.stringify(cur));}catch(e){storageError();toast('مسودة التمرين مش بتتحفظ، صدّر نسخة بعد الحفظ');}}
+function uid(){return 'x'+Date.now().toString(36)+Math.random().toString(36).slice(2,7);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function pad(n){return (n<10?'0':'')+n;}
+function isoOf(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function todayIso(){return isoOf(new Date());}
+function dayIdxOf(d){return (d.getDay()+1)%7;}
+function fmtDate(iso){var p=iso.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);return DAYS[dayIdxOf(d)]+' '+(+p[2])+' '+MONTHS[+p[1]-1]+' '+p[0];}
+function getEx(id){for(var i=0;i<db.exercises.length;i++)if(db.exercises[i].id===id)return db.exercises[i];return null;}
+function toast(m){var t=document.getElementById('toast');t.textContent=m;t.style.display='block';clearTimeout(t._h);t._h=setTimeout(function(){t.style.display='none';},3000);}
+function sessionFor(iso){for(var i=0;i<db.sessions.length;i++)if(db.sessions[i].date===iso)return db.sessions[i];return null;}
+
+function go(v){
+  view=v;
+  var vs=document.querySelectorAll('.view');for(var i=0;i<vs.length;i++)vs[i].classList.remove('on');
+  document.getElementById(v).classList.add('on');
+  var bs=document.querySelectorAll('#tabbar button');for(var j=0;j<bs.length;j++)bs[j].classList.toggle('on',bs[j].getAttribute('data-t')===v);
+  render();
+  window.scrollTo(0,0);
+}
+function render(){
+  document.getElementById('vsub').textContent=fmtDate(todayIso());
+  if(view==='v-today')renderToday();
+  else if(view==='v-sched')renderSched();
+  else if(view==='v-ex')renderEx();
+  else if(view==='v-hist')renderHist();
+  else if(view==='v-wo')renderWo();
+}
+
+/* ---------- Today ---------- */
+function countWeek(){
+  var now=new Date();var start=new Date(now.getFullYear(),now.getMonth(),now.getDate()-dayIdxOf(now));
+  var c=0;
+  for(var i=0;i<db.sessions.length;i++){var p=db.sessions[i].date.split('-');var d=new Date(+p[0],+p[1]-1,+p[2]);if(d>=start&&d<=now&&(!db.sessions[i].status||db.sessions[i].status==='attended'))c++;}
+  return c;
+}
+function renderToday(){
+  var el=document.getElementById('v-today');
+  var di=dayIdxOf(new Date());var iso=todayIso();
+  var sch=db.schedule[di]||[];
+  var sess=sessionFor(iso);
+  var h='';
+  h+='<div class="card"><div class="hdr"><h3>تمرين النهارده، '+DAYS[di]+'</h3>'+(sess&&(!sess.status||sess.status==='attended')?'<span class="tag" style="background:#123f24;color:#86efac">اتسجل ✓</span>':'')+'</div>';
+  if(sch.length===0){
+    h+='<div class="mut">مفيش تمارين متظبطة ليوم '+DAYS[di]+' في جدولك. لو يوم راحة، تمام. لو اتمرنت، دوس الزرار تحت وسجل تمرين حر.</div>';
+  }else{
+    h+='<div>';
+    for(var i=0;i<sch.length;i++){var e=getEx(sch[i]);if(e)h+='<span class="chip">'+esc(e.name)+'</span>';}
+    h+='</div>';
+  }
+  h+='<button class="btn" onclick="startWo()">'+(sess?'كمّل تمرين النهارده':'ابدأ تمرين النهارده')+'</button>';
+  if(!sess||sess.status!=='attended')h+='<button class="btn sec" onclick="markAtt()">حضرت من غير ما أسجل تفاصيل</button>';
+  h+='</div>';
+  h+='<div class="stats"><div class="stat"><b>'+countWeek()+'</b>يوم تمرين الأسبوع ده</div><div class="stat"><b>'+db.sessions.filter(function(s){return !s.status||s.status==='attended';}).length+'</b>يوم حضور إجمالي</div><div class="stat"><b>'+db.exercises.length+'</b>تمرين في قائمتك</div></div>';
+  h+='<div class="card" style="margin-top:12px"><div class="mut">سجلك بيتحفظ في المتصفح ده فقط، من غير إرسال بيانات التمرين لسيرفر. مسح بيانات الموقع أو الوضع الخفي ممكن يضيّع السجل. خُد نسخة احتياطية من «سجلي». أول فتح وتجهيز الأوفلاين محتاج نت. استنى تأكيد الجاهزية فوق، وبعدها افتح نفس الرابط من نفس المتصفح من غير نت. مفيش مزامنة بين الأجهزة.</div></div>';
+  el.innerHTML=h;
+}
+function markAtt(){recordDay(todayIso(),'attended');}
+function recordDay(date,status){
+ if(!validDate(date)||date>todayIso()){toast('اختار تاريخ صحيح، مش في المستقبل');return;}
+ var old=sessionFor(date);
+ if(old&&!confirm('تغيير حالة اليوم؟ تفاصيل التمرين القديمة هتفضل محفوظة.'))return;
+ if(old)old.status=status;else db.sessions.push({id:uid(),date:date,dayIdx:dayIdxOf(new Date(date+'T12:00:00')),status:status,entries:[],note:''});
+ if(!save())return;render();toast('اتحفظت حالة اليوم');
+}
+
+/* ---------- Workout ---------- */
+function startWo(editId){
+  var iso=todayIso();var di=dayIdxOf(new Date());
+  var draft=null;
+  try{var j=localStorage.getItem(LSD);if(j)draft=JSON.parse(j);}catch(e){}
+  if(editId){
+    var s=null;
+    for(var i=0;i<db.sessions.length;i++)if(db.sessions[i].id===editId)s=db.sessions[i];
+    if(!s){toast('اليوم ده مش موجود');return;}
+    cur={editingId:s.id,date:s.date,dayIdx:s.dayIdx,entries:JSON.parse(JSON.stringify(s.entries)),note:s.note||''};
+  }else if(draft&&draft.date===iso&&!draft.editingId&&Array.isArray(draft.entries)){
+    cur=draft;
+  }else{
+    var ex=sessionFor(iso);
+    if(ex){cur={editingId:ex.id,date:iso,dayIdx:ex.dayIdx,entries:JSON.parse(JSON.stringify(ex.entries)),note:ex.note||''};}
+    else{
+      var sch=db.schedule[di]||[];
+      var ents=[];
+      for(var k=0;k<sch.length;k++){var e=getEx(sch[k]);if(e)ents.push({exerciseId:e.id,name:e.name,sets:[{w:'',r:''}]});}
+      cur={editingId:null,date:iso,dayIdx:di,entries:ents,note:''};
+    }
+  }
+  view='v-wo';
+  var vs=document.querySelectorAll('.view');for(var i=0;i<vs.length;i++)vs[i].classList.remove('on');
+  document.getElementById('v-wo').classList.add('on');
+  var bs=document.querySelectorAll('#tabbar button');for(var j2=0;j2<bs.length;j2++)bs[j2].classList.remove('on');
+  renderWo();
+  window.scrollTo(0,0);
+}
+function lastSetsFor(exId,beforeIso){
+  var best=null;
+  for(var i=0;i<db.sessions.length;i++){
+    var s=db.sessions[i];
+    if(s.date>=beforeIso)continue;
+    if(best&&s.date<=best.date)continue;
+    for(var k=0;k<s.entries.length;k++){
+      var en=s.entries[k];
+      if(en.exerciseId===exId&&en.sets.length){
+        var parts=[];
+        for(var j=0;j<en.sets.length;j++)parts.push((en.sets[j].w||0)+'×'+(en.sets[j].r||0));
+        best={date:s.date,txt:parts.join(' ، ')};
+        break;
+      }
+    }
+  }
+  return best?best.txt:'';
+}
+function renderWo(){
+  if(!cur){go('v-today');return;}
+  var el=document.getElementById('v-wo');
+  var h='<div class="card"><div class="hdr"><h3>'+(cur.editingId?'تعديل يوم':'تمرين')+'، '+fmtDate(cur.date)+'</h3><button class="xbtn" onclick="exitWo()">✕</button></div>';
+  if(cur.entries.length===0)h+='<div class="mut">لسه مفيش تمارين في الجلسة دي. دوس «إضافة تمرين» تحت، أو احفظها كحضور بس.</div>';
+  for(var i=0;i<cur.entries.length;i++){
+    var en=cur.entries[i];
+    h+='<div class="entry"><div class="hdr"><b>'+esc(en.name)+'</b><button class="delbtn" onclick="woDelEx('+i+')">حذف</button></div>';
+    var hint=lastSetsFor(en.exerciseId,cur.date);
+    if(hint)h+='<div class="mut">آخر مرة: '+esc(hint)+'</div>';
+    h+='<table class="sets"><tr><td class="mut">مجموعة</td><td class="mut">الوزن (كجم)</td><td class="mut">تكرارات</td><td></td></tr>';
+    for(var j=0;j<en.sets.length;j++){
+      var st=en.sets[j];
+      h+='<tr><td>'+(j+1)+'</td>';
+      h+='<td><input class="w" type="number" inputmode="decimal" min="0" step="any" value="'+esc(st.w)+'" onchange="woSet('+i+','+j+',\'w\',this.value)"></td>';
+      h+='<td><input class="r" type="number" inputmode="numeric" min="0" step="1" value="'+esc(st.r)+'" onchange="woSet('+i+','+j+',\'r\',this.value)"></td>';
+      h+='<td><button class="xbtn" onclick="woDelSet('+i+','+j+')">✕</button></td></tr>';
+    }
+    h+='</table><button class="btn sec sm" onclick="woAddSet('+i+')">＋ مجموعة</button></div>';
+  }
+  h+='<button class="btn sec" onclick="pickExWo()">＋ إضافة تمرين للجلسة</button>';
+  h+='<div style="margin-top:8px"><textarea maxlength="10000" rows="2" placeholder="ملاحظات (اختياري)" onchange="woNoteCh(this.value)">'+esc(cur.note)+'</textarea></div>';
+  h+='<button class="btn" onclick="saveWo()">احفظ</button>';
+  h+='</div>';
+  el.innerHTML=h;
+}
+function pickExWo(){
+ var h='<h3>اختار تمرين للجلسة</h3>';
+ db.exercises.forEach(function(e){if(cur.entries.some(function(en){return en.exerciseId===e.id;}))return;h+='<div class="exrow"><span class="grow">'+esc(e.name)+'</span><button class="btn sm" onclick="woAddEx(\''+e.id+'\')">اختار</button></div>';});
+ h+='<p class="mut">لو التمرين مش في القائمة، ضيفه الأول من «تماريني»، وبعدها ارجع لجلسة النهارده.</p><button class="btn sec" onclick="closeModal()">قفل</button>';openModal(h);
+}
+function woAddEx(id){var e=getEx(id);if(!e||!cur)return;cur.entries.push({exerciseId:e.id,name:e.name,sets:[{w:'',r:''}]});saveDraft();closeModal();renderWo();}
+function woSet(i,j,f,v){cur.entries[i].sets[j][f]=v;saveDraft();}
+function woAddSet(i){var en=cur.entries[i];var last=en.sets[en.sets.length-1];en.sets.push({w:last?last.w:'',r:last?last.r:''});saveDraft();renderWo();}
+function woDelSet(i,j){cur.entries[i].sets.splice(j,1);saveDraft();renderWo();}
+function woDelEx(i){if(confirm('تمسح «'+cur.entries[i].name+'» من الجلسة دي؟')){cur.entries.splice(i,1);saveDraft();renderWo();}}
+function woNoteCh(v){cur.note=v;saveDraft();}
+function exitWo(){saveDraft();go('v-today');}
+function saveWo(){
+  for(var e of cur.entries)for(var st of e.sets){if((st.w!==''&&(!Number.isFinite(Number(st.w))||Number(st.w)<0||Number(st.w)>100000))||(st.r!==''&&(!Number.isInteger(Number(st.r))||Number(st.r)<0||Number(st.r)>100000))){toast('راجع الأوزان والتكرارات: قيم موجبة أو صفر، والتكرارات عدد صحيح');return;}}
+  var i,en;
+  for(i=0;i<cur.entries.length;i++){
+    en=cur.entries[i];
+    en.sets=en.sets.filter(function(s){return String(s.w).trim()!==''||String(s.r).trim()!=='';});
+  }
+  cur.entries=cur.entries.filter(function(e2){return e2.sets.length>0;});
+  var rec={status:'attended',id:cur.editingId||uid(),date:cur.date,dayIdx:cur.dayIdx,entries:cur.entries,note:cur.note||''};
+  var found=false;
+  for(i=0;i<db.sessions.length;i++)if(db.sessions[i].id===rec.id){db.sessions[i]=rec;found=true;break;}
+  if(!found)db.sessions.push(rec);
+  if(!save())return;
+  var wasEdit=!!cur.editingId;
+  try{localStorage.removeItem(LSD);}catch(e){}
+  cur=null;
+  toast('اتحفظ ✓');
+  go(wasEdit?'v-hist':'v-today');
+}
+
+/* ---------- Schedule ---------- */
+function renderSched(){
+  var el=document.getElementById('v-sched');
+  var h='<div class="card mut">ظبط أيام أسبوعك: كل يوم والتمارين اللي فيه. أي تعديل بيتحفظ على طول.</div>';
+  var today=dayIdxOf(new Date());
+  for(var d=0;d<7;d++){
+    var list=db.schedule[d]||[];
+    h+='<div class="card"><div class="hdr"><h3>'+DAYS[d]+(d===today?' <span class="tag" style="background:#123f24;color:#86efac">النهارده</span>':'')+'</h3><button class="btn sec sm" onclick="pickExFor('+d+')">＋ تمرين</button></div>';
+    if(list.length===0)h+='<div class="mut">راحة</div>';
+    for(var k=0;k<list.length;k++){
+      var e=getEx(list[k]);if(!e)continue;
+      h+='<div class="exrow"><div class="grow">'+esc(e.name)+(e.group?' <span class="tag">'+esc(e.group)+'</span>':'')+'</div><button class="delbtn" onclick="rmExFromDay('+d+',\''+e.id+'\')">✕</button></div>';
+    }
+    h+='</div>';
+  }
+  el.innerHTML=h;
+}
+function pickExFor(dayIdx){
+  var h='<h3>إضافة تمرين ليوم '+DAYS[dayIdx]+'</h3>';
+  h+='<div class="row"><input type="text" maxlength="200" id="newExName" placeholder="اسم تمرين جديد" class="grow"><button class="btn sm" style="margin:0" onclick="createExIntoDay('+dayIdx+')">إضافة</button></div><div class="mut" style="margin:8px 0">أو اختار من تمارينك:</div>';
+  var cur2=db.schedule[dayIdx]||[];
+  var any=false;
+  for(var i=0;i<db.exercises.length;i++){
+    var e=db.exercises[i];if(cur2.indexOf(e.id)>=0)continue;any=true;
+    h+='<div class="exrow"><div class="grow">'+esc(e.name)+(e.group?' <span class="tag">'+esc(e.group)+'</span>':'')+'</div><button class="btn sm" style="margin:0" onclick="addExToDay('+dayIdx+',\''+e.id+'\')">اختار</button></div>';
+  }
+  if(!any)h+='<div class="mut">مفيش تمارين تانية في قائمتك. اكتب اسم تمرين جديد فوق.</div>';
+  h+='<button class="btn sec" onclick="closeModal()">قفل</button>';
+  openModal(h);
+}
+function createExIntoDay(dayIdx){
+  var n=document.getElementById('newExName').value.trim();
+  if(!n){toast('اكتب اسم التمرين الأول');return;}
+  var e={id:uid(),name:n,group:''};
+  db.exercises.push(e);
+  addExToDay(dayIdx,e.id);
+}
+function addExToDay(dayIdx,id){
+  if(!db.schedule[dayIdx])db.schedule[dayIdx]=[];
+  if(db.schedule[dayIdx].indexOf(id)<0)db.schedule[dayIdx].push(id);
+  if(!save())return;closeModal();renderSched();
+}
+function rmExFromDay(dayIdx,id){
+  var a=db.schedule[dayIdx]||[];
+  var ix=a.indexOf(id);
+  if(ix>=0)a.splice(ix,1);
+  if(!save())return;renderSched();
+}
+
+/* ---------- Exercises ---------- */
+function renderEx(){
+  var el=document.getElementById('v-ex');
+  var h='<div class="card"><h3>إضافة تمرين جديد</h3><input type="text" maxlength="200" id="exNewName" placeholder="اسم التمرين، مثال: بنش برس"><div style="height:8px"></div><input type="text" maxlength="100" id="exNewGrp" placeholder="العضلة (اختياري)، مثال: صدر"><button class="btn" onclick="createEx()">إضافة للقائمة</button></div>';
+  h+='<div class="card"><h3>تمارينك ('+db.exercises.length+')</h3>';
+  if(db.exercises.length===0)h+='<div class="mut">لسه مفيش تمارين. ضيف أول تمرين من الفورم اللي فوق.</div>';
+  for(var i=0;i<db.exercises.length;i++){
+    var e=db.exercises[i];
+    h+='<div class="exrow"><div class="grow"><b>'+esc(e.name)+'</b>'+(e.group?' <span class="tag">'+esc(e.group)+'</span>':'')+'</div>';
+    h+='<button class="btn sec sm" style="margin:0" onclick="editEx(\''+e.id+'\')">تعديل</button><button class="delbtn" onclick="delEx(\''+e.id+'\')">✕</button></div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+function createEx(){
+  var n=document.getElementById('exNewName').value.trim();
+  var g=document.getElementById('exNewGrp').value.trim();
+  if(!n){toast('اكتب اسم التمرين');return;}
+  db.exercises.push({id:uid(),name:n,group:g});
+  if(!save())return;renderEx();toast('اتضاف ✓');
+}
+function editEx(id){
+  var e=getEx(id);if(!e)return;
+  var h='<h3>تعديل التمرين</h3>';
+  h+='<input type="text" maxlength="200" id="exEdName" value="'+esc(e.name)+'">';
+  h+='<div style="height:8px"></div><input type="text" maxlength="100" id="exEdGrp" placeholder="العضلة (اختياري)" value="'+esc(e.group||'')+'">';
+  h+='<button class="btn" onclick="saveExEdit(\''+id+'\')">حفظ</button><button class="btn sec" onclick="closeModal()">إلغاء</button>';
+  openModal(h);
+}
+function saveExEdit(id){
+  var e=getEx(id);if(!e)return;
+  var n=document.getElementById('exEdName').value.trim();
+  if(!n){toast('اسم التمرين مطلوب');return;}
+  e.name=n;e.group=document.getElementById('exEdGrp').value.trim();
+  for(var i=0;i<db.sessions.length;i++)for(var k=0;k<db.sessions[i].entries.length;k++)if(db.sessions[i].entries[k].exerciseId===id)db.sessions[i].entries[k].name=n;
+  if(!save())return;closeModal();renderEx();toast('اتحفظ ✓');
+}
+function delEx(id){
+  var e=getEx(id);if(!e)return;
+  if(!confirm('تمسح «'+e.name+'» من القائمة والجدول؟ سجلّاتك القديمة هتفضل محفوظة بنفس الاسم.'))return;
+  for(var i=0;i<db.exercises.length;i++)if(db.exercises[i].id===id){db.exercises.splice(i,1);break;}
+  for(var d=0;d<7;d++){var a=db.schedule[d]||[];var ix=a.indexOf(id);if(ix>=0)a.splice(ix,1);}
+  if(!save())return;renderEx();
+}
+
+/* ---------- History & backup ---------- */
+function renderHist(){
+  var el=document.getElementById('v-hist');
+  var arr=db.sessions.slice().sort(function(a,b){return a.date<b.date?1:(a.date>b.date?-1:0);});
+  var h='<div class="card"><h3>النسخة الاحتياطية</h3><div class="mut">السجل محفوظ في نفس المتصفح ونفس عنوان الموقع فقط. اعمل نسخة JSON كل فترة وقبل مسح بيانات الموقع أو تغيير الجهاز أو رابط الموقع. تنزيل الملف مش معناه نسخة سحابية، لازم تحتفظ بيه في مكان آمن. النسخة مش مشفّرة، ما ترفعهاش على GitHub.</div>';
+  h+='<button class="btn sec" onclick="exportBk()">تصدير نسخة احتياطية</button>';
+  h+='<button class="btn sec" onclick="importBk()">استرجاع نسخة احتياطية</button></div>';
+  h+='<div class="card"><h3>تسجيل حالة يوم</h3><label for="dayDate">التاريخ</label><input type="date" id="dayDate" value="'+todayIso()+'" max="'+todayIso()+'"><label for="dayStatus">الحالة</label><select id="dayStatus"><option value="attended">حضرت</option><option value="missed">غبت</option><option value="rest">راحة</option></select><button class="btn sec" onclick="recordDay(document.getElementById(\'dayDate\').value,document.getElementById(\'dayStatus\').value)">حفظ حالة اليوم</button><div class="mut">اليوم غير المسجل مش محسوب غياب تلقائيًا.</div></div>';
+  h+='<div class="card"><h3>الأيام المسجلة ('+db.sessions.length+')</h3>';
+  if(arr.length===0)h+='<div class="mut">لسه مفيش أيام متسجلة.</div>';
+  for(var i=0;i<arr.length;i++){
+    var s=arr[i];var ns=0,vol=0;
+    for(var k=0;k<s.entries.length;k++){
+      var en=s.entries[k];ns+=en.sets.length;
+      for(var j=0;j<en.sets.length;j++)vol+=(parseFloat(en.sets[j].w)||0)*(parseFloat(en.sets[j].r)||0);
+    }
+    h+='<div class="exrow" onclick="showSess(\''+s.id+'\')" style="cursor:pointer"><div class="grow"><b>'+fmtDate(s.date)+'</b><div class="mut">'+((s.status==='missed'?'غياب • ':s.status==='rest'?'راحة • ':'حضور • '))+(s.entries.length?(s.entries.length+' تمرين • '+ns+' مجموعة • حجم '+Math.round(vol)+' كجم'):(s.status==='missed'?'يوم غياب':s.status==='rest'?'يوم راحة':'حضور من غير تفاصيل'))+'</div></div><span class="mut">‹</span></div>';
+  }
+  h+='</div>';
+  el.innerHTML=h;
+}
+function showSess(id){
+  var s=null;
+  for(var i=0;i<db.sessions.length;i++)if(db.sessions[i].id===id)s=db.sessions[i];
+  if(!s)return;
+  var h='<h3>'+fmtDate(s.date)+'</h3>';
+  if(s.entries.length===0)h+='<div class="mut">حضور من غير تسجيل تمارين.</div>';
+  for(var k=0;k<s.entries.length;k++){
+    var en=s.entries[k];
+    var parts=[];
+    for(var j=0;j<en.sets.length;j++)parts.push((j+1)+') '+esc(en.sets[j].w||0)+' كجم × '+esc(en.sets[j].r||0));
+    h+='<div class="entry"><b>'+esc(en.name)+'</b><div class="mut">'+parts.join(' • ')+'</div></div>';
+  }
+  if(s.note)h+='<div class="mut">ملاحظات: '+esc(s.note)+'</div>';
+  if(s.status==='missed'||s.status==='rest')h+='<p class="mut">الحالة: '+(s.status==='missed'?'غياب':'راحة')+'. تعديل تفاصيل التمرين وحفظها بيحوّل اليوم لحضور.</p>';
+  h+='<button class="btn" onclick="closeModal();startWo(\''+s.id+'\')">عدّل اليوم ده</button>';
+  h+='<button class="btn danger" onclick="delSess(\''+s.id+'\')">امسح اليوم ده</button>';
+  h+='<button class="btn sec" onclick="closeModal()">قفل</button>';
+  openModal(h);
+}
+function delSess(id){
+  if(!confirm('متأكد تمسح اليوم ده نهائي؟'))return;
+  for(var i=0;i<db.sessions.length;i++)if(db.sessions[i].id===id){db.sessions.splice(i,1);break;}
+  if(!save())return;closeModal();renderHist();toast('اتمسح');
+}
+function exportBk(){
+ var blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='gym-backup-'+todayIso()+'.json';a.click();setTimeout(function(){URL.revokeObjectURL(url);},60000);toast('اتطلب تنزيل ملف النسخة. اتأكد إنه موجود في التنزيلات');
+}
+function importBk(){
+ openModal('<h3>استرجاع نسخة احتياطية</h3><div class="mut">صدّر النسخة الحالية الأول. الاسترجاع بيستبدل السجل كله، مش بيدمج النسختين. اختار ملف JSON من جهازك (الحد 5 ميجابايت).</div><input id="bkFile" type="file" accept=".json,application/json" onchange="readBackup(this.files[0])"><details><summary>أو الصق نص نسخة قديمة</summary><textarea id="bkIn" rows="6"></textarea><button class="btn" onclick="applyImport(document.getElementById(\'bkIn\').value)">استرجاع النص</button></details><button class="btn sec" onclick="closeModal()">إلغاء</button>');
+}
+function readBackup(file){if(!file)return;if(file.size>5*1024*1024){toast('الملف أكبر من 5 ميجابايت');return;}var r=new FileReader();r.onload=function(){applyImport(r.result);};r.onerror=function(){toast('تعذر قراءة الملف');};r.readAsText(file);}
+function applyImport(j){
+ var d;try{if(j.length>5*1024*1024)throw Error('size');d=cleanData(JSON.parse(j));}catch(e){toast('الملف مش نسخة احتياطية سليمة أو حجمه كبير');return;}
+ if(!confirm('ده هيستبدل كل البيانات الحالية بالنسخة الاحتياطية. متأكد؟'))return;
+ db=d;if(!save())return;cur=null;try{localStorage.removeItem(LSD);}catch(e){}closeModal();go('v-hist');toast('اترجعت النسخة');
+}
+
+/* ---------- Modal & back ---------- */
+function openModal(html){document.getElementById('mroot').innerHTML='<div class="modal-wrap" onclick="if(event.target===this)closeModal()"><div class="modal">'+html+'</div></div>';}
+function closeModal(){document.getElementById('mroot').innerHTML='';}
+window.addEventListener('storage',function(e){if(e.key===LS){loadFailed=true;var el=document.getElementById('storageWarning');el.hidden=false;el.textContent='السجل اتغير من تبويب تاني. حدّث الصفحة قبل تعديل البيانات، عشان ما تستبدلش التغييرات الجديدة.';}});
+try{var probe=LS+'.check';localStorage.setItem(probe,'1');localStorage.removeItem(probe);var stored=localStorage.getItem(LS);if(stored)cleanData(JSON.parse(stored));storageReady=true;}catch(e){storageError();}
+go('v-today');
+</script>
+<script>
+(function(){
+ var box=document.getElementById('offlineStatus');
+ function say(text,ok){box.textContent=text;box.style.background=ok?'#102b1c':'';box.style.color=ok?'#a8edc0':'';box.style.borderColor=ok?'#25643d':'';}
+ function check(){
+  if(!navigator.serviceWorker.controller){say('لسه الأوفلاين مش جاهز. سيب الصفحة مفتوحة بالنت، وبعدها حدّثها.');return;}
+  var channel=new MessageChannel();
+  var timer=setTimeout(function(){say('تعذر تأكيد تجهيز الأوفلاين. افتح نفس الرابط بالنت وحدّث الصفحة.');channel.port1.close();},6000);
+  channel.port1.onmessage=function(e){clearTimeout(timer);channel.port1.close();if(e.data&&e.data.ready){say('جاهز للأوفلاين ✓ افتح نفس الرابط من نفس المتصفح. الحفظ شغال من غير نت. خُد نسخة احتياطية دورية.',true);}else say('ملفات الأوفلاين مش مكتملة. افتح نفس الرابط بالنت وحدّث الصفحة.');};
+  navigator.serviceWorker.controller.postMessage({type:'GYM_CACHE_STATUS'},[channel.port2]);
+ }
+ if(!window.isSecureContext||!('serviceWorker' in navigator)||location.protocol==='file:'){
+  say('الأوفلاين محتاج رابط HTTPS من GitHub Pages ومتصفح بيدعمه. فتح الملف من التنزيلات مش بيجهّز الأوفلاين.');return;
+ }
+ navigator.serviceWorker.addEventListener('controllerchange',check);
+ navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(function(reg){
+  if(navigator.serviceWorker.controller)check();
+  navigator.serviceWorker.ready.then(check);
+  reg.addEventListener('updatefound',function(){var worker=reg.installing;if(worker)worker.addEventListener('statechange',function(){if(worker.state==='redundant')say('تجهيز أو تحديث الأوفلاين فشل. اتأكد إن index.html وsw.js في نفس المجلد وافتح بالنت.');});});
+ }).catch(function(){say('تجهيز الأوفلاين فشل. اتأكد إن sw.js مرفوع جنب index.html وافتح رابط GitHub Pages بالنت، مش ملف التنزيلات.');});
+ setTimeout(function(){if(!navigator.serviceWorker.controller)say('الأوفلاين لسه مش متأكد. اتأكد إن الملفين مرفوعين، وخليك بالنت وحدّث الصفحة.');},15000);
+ window.addEventListener('pageshow',function(){if(navigator.serviceWorker.controller)check();});
+})();
+</script>
+</body>
+</html>
